@@ -994,6 +994,14 @@
        ============================================================ */
     .skills-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
 
+    /* Carries the scatter. The card inside keeps its own hover transform. */
+    .skill-slot {
+      display: flex;
+      will-change: transform;
+    }
+
+    .skill-slot > .skill-card { width: 100%; }
+
     .skill-card { min-height: 190px; }
 
     .skill-icon {
@@ -1645,41 +1653,56 @@
           </p>
         </div>
 
-        <div class="skills-grid">
-          <div class="glass-card skill-card reveal">
-            <div class="skill-icon">01</div>
-            <h3>Android Development</h3>
-            <p>Building Android interfaces, activity flows, API integration, RecyclerView-based screens, and mobile app features.</p>
+        <!-- Each card sits in its own slot: the slot carries the scroll-driven
+             scatter, the card keeps its own hover tilt, so the two transforms
+             never overwrite each other. -->
+        <div class="skills-grid" id="skillsGrid">
+          <div class="skill-slot">
+            <div class="glass-card skill-card reveal">
+              <div class="skill-icon">01</div>
+              <h3>Android Development</h3>
+              <p>Building Android interfaces, activity flows, API integration, RecyclerView-based screens, and mobile app features.</p>
+            </div>
           </div>
 
-          <div class="glass-card skill-card reveal" style="--d: 90ms">
-            <div class="skill-icon">02</div>
-            <h3>Web Development</h3>
-            <p>Creating responsive web pages with HTML, CSS, JavaScript, animation, and interactive front-end experiences.</p>
+          <div class="skill-slot">
+            <div class="glass-card skill-card reveal" style="--d: 90ms">
+              <div class="skill-icon">02</div>
+              <h3>Web Development</h3>
+              <p>Creating responsive web pages with HTML, CSS, JavaScript, animation, and interactive front-end experiences.</p>
+            </div>
           </div>
 
-          <div class="glass-card skill-card reveal" style="--d: 180ms">
-            <div class="skill-icon">03</div>
-            <h3>IoT &amp; Monitoring</h3>
-            <p>Exploring sensor data, Node-RED flows, MQTT concepts, MongoDB storage, and realtime dashboard ideas.</p>
+          <div class="skill-slot">
+            <div class="glass-card skill-card reveal" style="--d: 180ms">
+              <div class="skill-icon">03</div>
+              <h3>IoT &amp; Monitoring</h3>
+              <p>Exploring sensor data, Node-RED flows, MQTT concepts, MongoDB storage, and realtime dashboard ideas.</p>
+            </div>
           </div>
 
-          <div class="glass-card skill-card reveal">
-            <div class="skill-icon">04</div>
-            <h3>Networking</h3>
-            <p>Understanding network configuration, MikroTik, firewall concepts, VLAN, NAT, TCP/IP internals, and traffic management.</p>
+          <div class="skill-slot">
+            <div class="glass-card skill-card reveal">
+              <div class="skill-icon">04</div>
+              <h3>Networking</h3>
+              <p>Understanding network configuration, MikroTik, firewall concepts, VLAN, NAT, TCP/IP internals, and traffic management.</p>
+            </div>
           </div>
 
-          <div class="glass-card skill-card reveal" style="--d: 90ms">
-            <div class="skill-icon">05</div>
-            <h3>Analytical Thinking</h3>
-            <p>Using mathematics, logic, and technical analysis to understand patterns, solve problems, and make decisions.</p>
+          <div class="skill-slot">
+            <div class="glass-card skill-card reveal" style="--d: 90ms">
+              <div class="skill-icon">05</div>
+              <h3>Analytical Thinking</h3>
+              <p>Using mathematics, logic, and technical analysis to understand patterns, solve problems, and make decisions.</p>
+            </div>
           </div>
 
-          <div class="glass-card skill-card reveal" style="--d: 180ms">
-            <div class="skill-icon">06</div>
-            <h3>Problem Solving</h3>
-            <p>Debugging errors, improving project structure, testing features, and turning rough ideas into usable products.</p>
+          <div class="skill-slot">
+            <div class="glass-card skill-card reveal" style="--d: 180ms">
+              <div class="skill-icon">06</div>
+              <h3>Problem Solving</h3>
+              <p>Debugging errors, improving project structure, testing features, and turning rough ideas into usable products.</p>
+            </div>
           </div>
         </div>
       </div>
@@ -2448,6 +2471,78 @@
       }
     }
 
+    /* ---------- Skills grid: scatters as it leaves, reassembles coming back ----
+       Scroll-scrubbed, so it is reversible by definition — the position of the
+       section is the only input, and scrolling back up simply replays it. */
+    const skillsGrid = document.getElementById('skillsGrid');
+    const skillsSection = document.getElementById('skills');
+    const slots = skillsGrid ? [...skillsGrid.querySelectorAll('.skill-slot')] : [];
+    let lastScatter = -1;
+
+    // Direction is read from where each card actually sits, so a 3-, 2- or
+    // 1-column layout each scatter sensibly without hardcoding the grid.
+    function measureSlots() {
+      if (!slots.length) return;
+      let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+
+      slots.forEach(s => {
+        // offsetLeft/Top are layout positions — unaffected by any transform
+        // we may already have applied.
+        s._cx = s.offsetLeft + s.offsetWidth / 2;
+        s._cy = s.offsetTop + s.offsetHeight / 2;
+        minX = Math.min(minX, s._cx); maxX = Math.max(maxX, s._cx);
+        minY = Math.min(minY, s._cy); maxY = Math.max(maxY, s._cy);
+      });
+
+      const midX = (minX + maxX) / 2, midY = (minY + maxY) / 2;
+      const spanX = (maxX - minX) / 2, spanY = (maxY - minY) / 2;
+      const singleColumn = spanX < 10;
+
+      slots.forEach((s, i) => {
+        // Stacked in one column there is no horizontal spread to read, so
+        // alternate sides instead of letting everything slide straight down.
+        s._vx = singleColumn ? (i % 2 ? 0.85 : -0.85) : (s._cx - midX) / spanX;
+        s._vy = spanY < 10 ? 0 : (s._cy - midY) / spanY;
+      });
+    }
+
+    function applyScatter() {
+      if (!slots.length || !skillsSection) return;
+
+      const rect = skillsSection.getBoundingClientRect();
+      const vh = window.innerHeight;
+      // 0 while the section is centred, rising to 1 as it travels up and out.
+      const past = vh / 2 - (rect.top + rect.height / 2);
+      const p = Math.max(0, Math.min(1, past / (vh * 0.75)));
+
+      if (Math.abs(p - lastScatter) < 0.002) return;
+      lastScatter = p;
+
+      const amp = reduced ? 0.4 : 1;
+      const eased = p * p;   // holds together a little longer before flying apart
+
+      slots.forEach(s => {
+        if (p === 0) {
+          s.style.transform = '';
+          s.style.opacity = '';
+          return;
+        }
+        const tx = s._vx * eased * 210 * amp;
+        const ty = s._vy * eased * 130 * amp;
+        const rot = s._vx * eased * 12 * amp;
+        const sc = 1 - eased * 0.14 * amp;
+        s.style.transform = `translate3d(${tx.toFixed(1)}px, ${ty.toFixed(1)}px, 0) rotate(${rot.toFixed(2)}deg) scale(${sc.toFixed(3)})`;
+        s.style.opacity = (1 - eased * 0.7 * amp).toFixed(3);
+      });
+    }
+
+    measureSlots();
+    window.addEventListener('resize', () => {
+      lastScatter = -1;
+      measureSlots();
+      applyScatter();
+    });
+
     /* ---------- Scroll: progress, header, scrollspy, to-top ---------- */
     const header = document.getElementById('siteHeader');
     const progress = document.getElementById('scrollProgress');
@@ -2483,12 +2578,23 @@
       });
 
       sweepReveals();
+      applyScatter();
       scrollQueued = false;
     }
 
     window.addEventListener('scroll', () => {
       if (!scrollQueued) { scrollQueued = true; requestAnimationFrame(onScroll); }
     }, { passive: true });
+
+    // rAF is paused while the tab is hidden, so anything that scrolled in the
+    // meantime leaves the scatter and the nav showing stale positions. Catch up
+    // as soon as the page is on screen again.
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) {
+        scrollQueued = true;
+        requestAnimationFrame(onScroll);
+      }
+    });
 
     onScroll();
 
