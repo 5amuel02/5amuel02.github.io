@@ -1012,6 +1012,10 @@
       inset: 0;
       pointer-events: none;
       opacity: 0;
+      /* Gives the fragments somewhere to tumble into. Without it they only
+         ever slide across the page, which never reads as glass. */
+      perspective: 820px;
+      transform-style: preserve-3d;
     }
 
     .slot-shattered > .shards { opacity: 1; }
@@ -1025,6 +1029,23 @@
       position: absolute;
       inset: 0;
       will-change: transform, opacity;
+      backface-visibility: hidden;
+    }
+
+    /* Catches the "light" as a fragment turns, so an edge flashes rather than
+       the whole piece just dimming. Measured at ~14fps for the full set, so
+       only the centre pieces carry it — they are nearest the impact, move
+       most, and are what the eye actually follows. */
+    .shard.glint::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg,
+        rgba(255, 255, 255, 0.38) 0%,
+        rgba(255, 120, 140, 0.12) 38%,
+        transparent 62%);
+      opacity: var(--glint, 0);
+      pointer-events: none;
     }
 
     .shard > .skill-card {
@@ -2544,11 +2565,13 @@
       });
     }
 
-    /* Cut one card into wedges radiating from a single off-centre impact
-       point. Sharing each boundary angle between neighbouring wedges is what
-       makes them tile with no gap or overlap. Built on first break, not on
-       load, so an untouched page never pays for it. */
-    const SHARDS = 7;
+    /* Real glass does not break into equal pie slices. It breaks along cracks
+       running out from the impact and along others circling it, which leaves
+       a few small pieces at the centre and larger ones further out. So: one
+       ring of irregular radius, triangles inside it, quads outside — every
+       boundary shared with its neighbour so the pieces tile the card exactly.
+       Cracks are straight, so straight chords are the honest shape here. */
+    const SECTORS = 4;
 
     function buildShards(slot) {
       const card = slot.querySelector('.skill-card');
@@ -2560,38 +2583,56 @@
 
       const cx = 34 + Math.random() * 32;
       const cy = 32 + Math.random() * 34;
-      const step = 360 / SHARDS;
-      const R = 320;                       // well past the corners
+      const step = 360 / SECTORS;
+      const OUT = 320;                       // well past the corners
 
-      const angles = [];
-      for (let i = 0; i < SHARDS; i++) {
-        angles.push(i * step + (Math.random() * 18 - 9));
+      // Shared boundaries: ragged radii, uneven angles.
+      const ang = [], rad = [];
+      for (let i = 0; i < SECTORS; i++) {
+        ang.push((i * step + (Math.random() * 22 - 11)) * Math.PI / 180);
+        rad.push(20 + Math.random() * 20);
       }
-      angles.push(angles[0] + 360);
+      ang.push(ang[0] + Math.PI * 2);
+      rad.push(rad[0]);
 
-      for (let i = 0; i < SHARDS; i++) {
-        const a1 = angles[i] * Math.PI / 180;
-        const a2 = angles[i + 1] * Math.PI / 180;
+      const at = (r, i) => [
+        (cx + r * Math.cos(ang[i])).toFixed(1),
+        (cy + r * Math.sin(ang[i])).toFixed(1)
+      ];
 
+      function addShard(points, midAngle, ring) {
         const shard = document.createElement('div');
-        shard.className = 'shard';
-        shard.style.clipPath =
-          `polygon(${cx}% ${cy}%, ` +
-          `${(cx + R * Math.cos(a1)).toFixed(1)}% ${(cy + R * Math.sin(a1)).toFixed(1)}%, ` +
-          `${(cx + R * Math.cos(a2)).toFixed(1)}% ${(cy + R * Math.sin(a2)).toFixed(1)}%)`;
+        shard.className = ring === 0 ? 'shard glint' : 'shard';
+        shard.style.clipPath = `polygon(${points.map(p => p[0] + '% ' + p[1] + '%').join(', ')})`;
 
         const clone = card.cloneNode(true);
         clone.classList.remove('reveal');
         clone.removeAttribute('style');
         shard.appendChild(clone);
 
-        const mid = (a1 + a2) / 2;
-        shard._dx = Math.cos(mid);
-        shard._dy = Math.sin(mid);
-        shard._rot = (Math.random() * 2 - 1) * 34;
-        shard._speed = 0.75 + Math.random() * 0.6;   // uneven, like real glass
+        shard._dx = Math.cos(midAngle);
+        shard._dy = Math.sin(midAngle);
+        // Centre pieces are struck head-on, so they come at the viewer; the
+        // outer ring mostly sails past and away.
+        shard._dz = ring === 0
+          ? 120 + Math.random() * 220
+          : -60 - Math.random() * 260;
+        shard._rx = (Math.random() * 2 - 1) * 150;
+        shard._ry = (Math.random() * 2 - 1) * 150;
+        shard._rz = (Math.random() * 2 - 1) * 70;
+        shard._speed = 0.7 + Math.random() * 0.75;
+        // The middle lets go first; the crack needs a moment to reach the edge.
+        shard._delay = ring === 0 ? 0 : 0.10 + Math.random() * 0.12;
 
         host.appendChild(shard);
+      }
+
+      for (let i = 0; i < SECTORS; i++) {
+        const mid = (ang[i] + ang[i + 1]) / 2;
+        // inner triangle: impact point out to the ring
+        addShard([[cx.toFixed(1), cy.toFixed(1)], at(rad[i], i), at(rad[i + 1], i + 1)], mid, 0);
+        // outer quad: ring out past the edge
+        addShard([at(rad[i], i), at(OUT, i), at(OUT, i + 1), at(rad[i + 1], i + 1)], mid, 1);
       }
 
       slot.appendChild(host);
@@ -2605,13 +2646,17 @@
       const vh = window.innerHeight;
       // 0 while the section is centred, rising to 1 as it travels up and out.
       const past = vh / 2 - (rect.top + rect.height / 2);
-      const p = Math.max(0, Math.min(1, past / (vh * 0.75)));
+      // Spread over most of a screen height: the break should be something you
+      // scroll *through*, not a switch you trip past.
+      const p = Math.max(0, Math.min(1, past / (vh * 1.15)));
 
-      if (Math.abs(p - lastScatter) < 0.002) return;
+      if (Math.abs(p - lastScatter) < 0.0015) return;
       lastScatter = p;
 
       const amp = reduced ? 0.4 : 1;
-      const eased = p * p;   // holds together a little longer before it goes
+      // Gentler than a square: holds together at first, but the cracking stage
+      // lasts long enough to actually be seen.
+      const eased = Math.pow(p, 1.35);
 
       slots.forEach(s => {
         if (p <= 0.001) {
@@ -2629,12 +2674,26 @@
           `translate3d(${(s._vx * eased * 60 * amp).toFixed(1)}px, ${(s._vy * eased * 34 * amp).toFixed(1)}px, 0)`;
 
         s._shards.forEach(sh => {
-          const q = Math.min(1, eased * sh._speed);
+          // Each fragment runs its own clock: nothing lets go at the same
+          // instant, which is what stops it looking mechanical.
+          const raw = (eased - sh._delay) / (1 - sh._delay);
+          const q = Math.max(0, Math.min(1, raw * sh._speed));
+
+          if (q === 0) { sh.style.transform = ''; sh.style.opacity = ''; sh.style.setProperty('--glint', '0'); return; }
+
           const d = q * 300 * amp;
+          const fall = q * q * 90 * amp;          // picks up speed downward
+          const tz = sh._dz * q * amp;
+
           sh.style.transform =
-            `translate3d(${(sh._dx * d).toFixed(1)}px, ${(sh._dy * d).toFixed(1)}px, 0) ` +
-            `rotate(${(sh._rot * q).toFixed(2)}deg) scale(${(1 - q * 0.12).toFixed(3)})`;
-          sh.style.opacity = (1 - q * 0.92 * amp).toFixed(3);
+            `translate3d(${(sh._dx * d).toFixed(1)}px, ${(sh._dy * d + fall).toFixed(1)}px, ${tz.toFixed(1)}px) ` +
+            `rotateX(${(sh._rx * q).toFixed(1)}deg) ` +
+            `rotateY(${(sh._ry * q).toFixed(1)}deg) ` +
+            `rotateZ(${(sh._rz * q).toFixed(1)}deg)`;
+
+          // Brightest just after it breaks free, then gone as it tumbles off.
+          sh.style.setProperty('--glint', (Math.sin(Math.min(1, q * 1.6) * Math.PI) * 0.85).toFixed(3));
+          sh.style.opacity = (1 - q * 0.95 * amp).toFixed(3);
         });
       });
     }
