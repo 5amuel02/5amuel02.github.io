@@ -2026,22 +2026,29 @@
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
         ctx.globalAlpha = 1;
 
-        // A drop-shadow on a canvas this size is not free, and the glow only
-        // needs to track the spin loosely — rewrite it in steps rather than
-        // every frame.
+        // Two shadows — a tight core and a wide bloom — are what make the mark
+        // read as neon rather than just tinted. Cheap here because the whole
+        // extrusion is one element. Rewritten in steps, not every frame.
         const step = Math.round(glow * 8);
         if (step !== lastGlowStep) {
           lastGlowStep = step;
           const g = step / 8;
           markCanvas.style.filter =
-            `drop-shadow(0 0 ${(10 + g * 16).toFixed(1)}px rgba(255,31,61,${(0.4 + g * 0.4).toFixed(2)}))`;
+            `drop-shadow(0 0 ${(14 + g * 12).toFixed(1)}px rgba(255,31,61,${(0.55 + g * 0.35).toFixed(2)})) ` +
+            `drop-shadow(0 0 ${(46 + g * 26).toFixed(1)}px rgba(255,31,61,${(0.28 + g * 0.32).toFixed(2)}))`;
         }
       }
 
       // Three axes, each with its own velocity so they can settle independently.
       // Different rates per axis make it tumble rather than spin like a wheel.
       const RATE = { x: 0.45, y: 1, z: 0.22 };
-      const TILT_BASE = -8;                 // resting lean, kept out of the spin
+
+      // Resting pose, kept out of the spin so the settle can still snap to a
+      // clean angle. Orthographic projection has no perspective to hint depth
+      // with, so at rest the mark sits in a three-quarter view — that is what
+      // shows the extruded side and reads as solid rather than printed on.
+      const TILT_BASE = -11;
+      const YAW_BASE = -21;
       const a = { x: 0, y: 0, z: 0 };       // angles
       const v = { x: 0, y: 0, z: 0 };       // angular velocities
       const AXES = ['x', 'y', 'z'];
@@ -2109,7 +2116,7 @@
         const target = Math.min(1, speed / 7);
         heat += (target - heat) * 0.09;
 
-        paint(TILT_BASE + a.x, a.y, a.z, heat);
+        paint(TILT_BASE + a.x, YAW_BASE + a.y, a.z, heat);
         if (glowEl) glowEl.style.setProperty('--bloom', (0.42 + heat * 0.5).toFixed(3));
 
         if (onStage || speed > 0 || settling) {
