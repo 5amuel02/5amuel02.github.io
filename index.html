@@ -1,92 +1,1403 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Samuel Manik — Portfolio</title>
-  <meta name="description" content="Samuel Manik — Computer Engineering student building software, networking tools, and embedded/hardware systems." />
-  <link rel="stylesheet" href="style.css" />
+  <title>Samuel A.S. Manik | Software · Networks · Hardware</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #050505;
+      --bg-soft: #0d0d0f;
+      --card: rgba(18, 18, 22, 0.72);
+      --card-strong: rgba(25, 25, 31, 0.92);
+      --red: #ff1f3d;
+      --red-soft: #ff4d61;
+      --red-dark: #9d0017;
+      --white: #ffffff;
+      --muted: #a5a5ad;
+      --line: rgba(255, 255, 255, 0.11);
+      --shadow: 0 24px 80px rgba(255, 31, 61, 0.18);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      min-height: 100vh;
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--white);
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(circle at 12% 18%, rgba(255, 31, 61, 0.32), transparent 24%),
+        radial-gradient(circle at 85% 12%, rgba(255, 75, 95, 0.18), transparent 26%),
+        radial-gradient(circle at 58% 82%, rgba(255, 0, 60, 0.20), transparent 34%),
+        linear-gradient(135deg, #020203 0%, #090206 42%, #050509 100%);
+      z-index: -8;
+    }
+
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 220 220' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.25'/%3E%3C/svg%3E");
+      opacity: 0.09;
+      mix-blend-mode: screen;
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    .futuristic-canvas {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -6;
+      pointer-events: none;
+    }
+
+    .aurora-bg {
+      position: fixed;
+      inset: -20%;
+      background:
+        conic-gradient(from 180deg at 50% 50%, transparent 0deg, rgba(255, 31, 61, 0.22) 70deg, transparent 140deg, rgba(255, 255, 255, 0.04) 210deg, rgba(255, 31, 61, 0.18) 290deg, transparent 360deg);
+      filter: blur(60px);
+      opacity: 0.55;
+      animation: auroraSpin 18s linear infinite;
+      z-index: -7;
+      pointer-events: none;
+    }
+
+    .hologram-orb {
+      position: fixed;
+      width: 460px;
+      height: 460px;
+      border-radius: 50%;
+      border: 1px solid rgba(255, 31, 61, 0.14);
+      background:
+        radial-gradient(circle at 30% 30%, rgba(255, 31, 61, 0.22), transparent 35%),
+        radial-gradient(circle at 70% 70%, rgba(255, 255, 255, 0.045), transparent 38%);
+      box-shadow:
+        inset 0 0 70px rgba(255, 31, 61, 0.08),
+        0 0 110px rgba(255, 31, 61, 0.10);
+      filter: blur(0.2px);
+      pointer-events: none;
+      z-index: -5;
+      animation: orbFloat 10s ease-in-out infinite;
+    }
+
+    .hologram-orb.one {
+      top: 16%;
+      right: -180px;
+    }
+
+    .hologram-orb.two {
+      width: 320px;
+      height: 320px;
+      left: -120px;
+      bottom: 12%;
+      animation-delay: -4s;
+    }
+
+    .hologram-orb::before,
+    .hologram-orb::after {
+      content: "";
+      position: absolute;
+      inset: 17%;
+      border-radius: 50%;
+      border: 1px dashed rgba(255, 31, 61, 0.23);
+      animation: rotate 14s linear infinite;
+    }
+
+    .hologram-orb::after {
+      inset: 32%;
+      border-style: solid;
+      border-color: rgba(255, 255, 255, 0.08);
+      animation-duration: 9s;
+      animation-direction: reverse;
+    }
+
+    @keyframes auroraSpin {
+      from { transform: rotate(0deg) scale(1); }
+      to { transform: rotate(360deg) scale(1.08); }
+    }
+
+    @keyframes orbFloat {
+      0%, 100% { transform: translate3d(0, 0, 0) rotate(0deg); }
+      50% { transform: translate3d(-20px, -28px, 0) rotate(8deg); }
+    }
+
+    .grid-bg {
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255, 31, 61, 0.07) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 31, 61, 0.07) 1px, transparent 1px),
+        linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+      background-size: 86px 86px, 86px 86px, 24px 24px, 24px 24px;
+      transform: perspective(800px) rotateX(60deg) translateY(-28%);
+      transform-origin: top center;
+      mask-image: linear-gradient(to bottom, black 0%, black 48%, transparent 92%);
+      animation: moveGrid 14s linear infinite;
+      z-index: -4;
+    }
+
+    .scanline {
+      position: fixed;
+      inset: 0;
+      background:
+        linear-gradient(to bottom, transparent, rgba(255, 31, 61, 0.13), transparent),
+        repeating-linear-gradient(to bottom, rgba(255,255,255,0.025) 0px, rgba(255,255,255,0.025) 1px, transparent 1px, transparent 5px);
+      height: 180px;
+      animation: scan 4.2s linear infinite;
+      z-index: -2;
+      pointer-events: none;
+    }
+
+    .particles {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .particle {
+      position: absolute;
+      width: 3px;
+      height: 3px;
+      background: rgba(255, 31, 61, 0.88);
+      border-radius: 50%;
+      box-shadow: 0 0 16px rgba(255, 31, 61, 0.9);
+      animation: floatParticle linear infinite;
+    }
+
+    .particle::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      right: 100%;
+      width: 80px;
+      height: 1px;
+      transform: translateY(-50%);
+      background: linear-gradient(to left, rgba(255,31,61,0.35), transparent);
+    }
+
+    @keyframes moveGrid {
+      from { background-position: 0 0, 0 0, 0 0, 0 0; }
+      to { background-position: 0 86px, 86px 0, 0 24px, 24px 0; }
+    }
+
+    @keyframes scan {
+      0% { transform: translateY(-180px); opacity: 0; }
+      10%, 80% { opacity: 1; }
+      100% { transform: translateY(110vh); opacity: 0; }
+    }
+
+    @keyframes floatParticle {
+      0% { transform: translateY(110vh) translateX(0); opacity: 0; }
+      10% { opacity: 1; }
+      90% { opacity: 1; }
+      100% { transform: translateY(-10vh) translateX(80px); opacity: 0; }
+    }
+
+    .container {
+      width: min(1180px, calc(100% - 40px));
+      margin: 0 auto;
+    }
+
+    .hero-content,
+    .profile-card,
+    .glass-card,
+    header {
+      position: relative;
+    }
+
+    .hero-content::before {
+      content: "</> SYSTEM.ONLINE";
+      position: absolute;
+      top: -44px;
+      left: 0;
+      color: rgba(255, 31, 61, 0.42);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.78rem;
+      letter-spacing: 0.16em;
+      text-shadow: 0 0 18px rgba(255, 31, 61, 0.35);
+    }
+
+    header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 50;
+      backdrop-filter: blur(18px);
+      background: rgba(5, 5, 5, 0.62);
+      border-bottom: 1px solid var(--line);
+    }
+
+    nav {
+      height: 76px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 900;
+      letter-spacing: -0.05em;
+      font-size: 1.15rem;
+    }
+
+    .logo-mark {
+      width: 40px;
+      height: 40px;
+      display: grid;
+      place-items: center;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--red), var(--red-dark));
+      box-shadow: 0 0 32px rgba(255, 31, 61, 0.45);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 26px;
+      align-items: center;
+    }
+
+    .nav-links a {
+      color: var(--muted);
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 0.92rem;
+      transition: 0.25s ease;
+    }
+
+    .nav-links a:hover {
+      color: var(--white);
+      text-shadow: 0 0 18px rgba(255, 31, 61, 0.6);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      border: 1px solid rgba(255, 31, 61, 0.45);
+      background: linear-gradient(135deg, rgba(255, 31, 61, 0.98), rgba(138, 0, 19, 0.98));
+      color: var(--white);
+      text-decoration: none;
+      font-weight: 900;
+      padding: 14px 20px;
+      border-radius: 999px;
+      box-shadow: var(--shadow);
+      transition: 0.25s ease;
+      cursor: pointer;
+    }
+
+    .btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 30px 90px rgba(255, 31, 61, 0.28);
+    }
+
+    .btn.secondary {
+      background: rgba(255, 255, 255, 0.055);
+      border-color: var(--line);
+      box-shadow: none;
+    }
+
+    main {
+      padding-top: 76px;
+    }
+
+    .hero {
+      min-height: 100vh;
+      display: grid;
+      align-items: center;
+      padding: 90px 0 60px;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 60px;
+      align-items: center;
+    }
+
+    .badge {
+      width: fit-content;
+      display: inline-flex;
+      gap: 10px;
+      align-items: center;
+      padding: 10px 14px;
+      border: 1px solid rgba(255, 31, 61, 0.35);
+      border-radius: 999px;
+      background: rgba(255, 31, 61, 0.08);
+      color: #ffd7dd;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.86rem;
+      margin-bottom: 22px;
+    }
+
+    .pulse {
+      width: 9px;
+      height: 9px;
+      background: var(--red);
+      border-radius: 50%;
+      box-shadow: 0 0 18px var(--red);
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.55); opacity: 0.55; }
+    }
+
+    h1 {
+      font-size: clamp(3.2rem, 8vw, 7.4rem);
+      line-height: 0.9;
+      letter-spacing: -0.08em;
+      margin-bottom: 24px;
+    }
+
+    .gradient-text {
+      background: linear-gradient(90deg, #ffffff, #ff9ba8, #ff1f3d);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .typing {
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--red-soft);
+      font-size: clamp(1.25rem, 3vw, 2rem);
+      font-weight: 700;
+      margin-bottom: 24px;
+      min-height: 42px;
+    }
+
+    .hero p {
+      max-width: 680px;
+      color: var(--muted);
+      line-height: 1.8;
+      font-size: 1.06rem;
+      margin-bottom: 32px;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .profile-card {
+      position: relative;
+      padding: 18px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 34px;
+      background: linear-gradient(145deg, rgba(255,255,255,0.08), rgba(255,255,255,0.025));
+      backdrop-filter: blur(18px);
+      box-shadow: 0 24px 120px rgba(255, 31, 61, 0.18);
+      transform-style: preserve-3d;
+      animation: floatCard 5s ease-in-out infinite;
+    }
+
+    @keyframes floatCard {
+      0%, 100% { transform: translateY(0) rotateX(0deg) rotateY(0deg); }
+      50% { transform: translateY(-16px) rotateX(2deg) rotateY(-3deg); }
+    }
+
+    .profile-card::before {
+      content: "";
+      position: absolute;
+      inset: -2px;
+      background: linear-gradient(135deg, rgba(255,31,61,0.75), transparent, rgba(255,31,61,0.18));
+      border-radius: 36px;
+      z-index: -1;
+      filter: blur(12px);
+      opacity: 0.45;
+    }
+
+    .profile-img-wrap {
+      position: relative;
+      border-radius: 28px;
+      overflow: hidden;
+      aspect-ratio: 4 / 5;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: #111;
+    }
+
+    .profile-img-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      filter: saturate(1.05) contrast(1.05);
+    }
+
+    .profile-overlay {
+      position: absolute;
+      inset: auto 16px 16px 16px;
+      padding: 18px;
+      border-radius: 22px;
+      background: rgba(0, 0, 0, 0.62);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      backdrop-filter: blur(16px);
+    }
+
+    .profile-overlay h3 {
+      font-size: 1.25rem;
+      margin-bottom: 6px;
+    }
+
+    .profile-overlay span {
+      color: var(--red-soft);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.86rem;
+    }
+
+    section {
+      padding: 105px 0;
+    }
+
+    .section-head {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 30px;
+      margin-bottom: 34px;
+    }
+
+    .section-kicker {
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--red-soft);
+      margin-bottom: 10px;
+      font-weight: 700;
+    }
+
+    h2 {
+      font-size: clamp(2.2rem, 5vw, 4.5rem);
+      letter-spacing: -0.07em;
+      line-height: 0.95;
+    }
+
+    .section-desc {
+      max-width: 540px;
+      color: var(--muted);
+      line-height: 1.8;
+    }
+
+    .about-grid {
+      display: grid;
+      grid-template-columns: 0.8fr 1.2fr;
+      gap: 24px;
+    }
+
+    .glass-card {
+      border: 1px solid var(--line);
+      background:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.025)),
+        var(--card);
+      backdrop-filter: blur(18px);
+      border-radius: 28px;
+      padding: 28px;
+      transition: 0.25s ease;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.06);
+    }
+
+    .glass-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      padding: 1px;
+      background: linear-gradient(135deg, rgba(255,31,61,0.55), transparent 30%, rgba(255,255,255,0.12));
+      mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+      mask-composite: exclude;
+      opacity: 0;
+      transition: 0.25s ease;
+      pointer-events: none;
+    }
+
+    .glass-card:hover::before {
+      opacity: 1;
+    }
+
+    .glass-card:hover {
+      transform: translateY(-6px);
+      border-color: rgba(255, 31, 61, 0.45);
+      box-shadow: 0 24px 80px rgba(255, 31, 61, 0.11);
+    }
+
+    .about-card h3,
+    .skill-card h3,
+    .project-card h3,
+    .contact-card h3 {
+      margin-bottom: 14px;
+      font-size: 1.32rem;
+    }
+
+    .about-card p {
+      color: var(--muted);
+      line-height: 1.85;
+    }
+
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+      margin-top: 22px;
+    }
+
+    .stat {
+      padding: 18px;
+      border-radius: 22px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.09);
+    }
+
+    .stat strong {
+      display: block;
+      font-size: 2rem;
+      color: var(--red-soft);
+      margin-bottom: 4px;
+    }
+
+    .stat span {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .skills-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+    }
+
+    .skill-card {
+      min-height: 180px;
+    }
+
+    .skill-icon {
+      width: 50px;
+      height: 50px;
+      display: grid;
+      place-items: center;
+      border-radius: 18px;
+      background: rgba(255, 31, 61, 0.1);
+      color: var(--red-soft);
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 900;
+      margin-bottom: 18px;
+      border: 1px solid rgba(255, 31, 61, 0.25);
+    }
+
+    .skill-card p {
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .tech-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .tag {
+      border: 1px solid rgba(255, 31, 61, 0.28);
+      background: rgba(255, 31, 61, 0.08);
+      color: #ffd5db;
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-size: 0.82rem;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .projects-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    .project-card {
+      overflow: hidden;
+      padding: 0;
+    }
+
+    .project-thumb {
+      height: 190px;
+      display: grid;
+      place-items: center;
+      position: relative;
+      background:
+        linear-gradient(135deg, rgba(255,31,61,0.22), rgba(0,0,0,0.2)),
+        linear-gradient(45deg, #111, #1b0710);
+      border-bottom: 1px solid var(--line);
+      overflow: hidden;
+    }
+
+    .project-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0.86;
+      transition: 0.4s ease;
+    }
+
+    .project-card:hover .project-thumb img {
+      transform: scale(1.08);
+      opacity: 1;
+    }
+
+    .project-thumb.has-image::before,
+    .project-thumb.has-image::after {
+      display: none;
+    }
+
+    .project-thumb.has-image::before {
+      content: "";
+      display: block;
+      position: absolute;
+      inset: 0;
+      width: auto;
+      height: auto;
+      border: none;
+      border-radius: 0;
+      background: linear-gradient(to top, rgba(0,0,0,0.72), rgba(0,0,0,0.08));
+      z-index: 1;
+      animation: none;
+    }
+
+    .project-thumb::before {
+      content: "";
+      position: absolute;
+      width: 180px;
+      height: 180px;
+      border: 2px solid rgba(255, 31, 61, 0.35);
+      border-radius: 50%;
+      animation: rotate 8s linear infinite;
+    }
+
+    .project-thumb::after {
+      content: "";
+      position: absolute;
+      width: 110px;
+      height: 110px;
+      border: 2px dashed rgba(255, 255, 255, 0.18);
+      border-radius: 50%;
+      animation: rotate 5s linear reverse infinite;
+    }
+
+    @keyframes rotate {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .project-symbol {
+      position: relative;
+      z-index: 2;
+      font-size: 2.8rem;
+      filter: drop-shadow(0 0 18px rgba(255,31,61,0.55));
+    }
+
+    .project-content {
+      padding: 24px;
+    }
+
+    .project-content p {
+      color: var(--muted);
+      line-height: 1.7;
+      margin-bottom: 16px;
+    }
+
+    .project-link {
+      display: inline-block;
+      color: var(--red-soft);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-decoration: none;
+      margin-top: 14px;
+      margin-right: 16px;
+    }
+
+    .project-link:hover {
+      text-decoration: underline;
+    }
+
+    .contact-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 18px;
+    }
+
+    .contact-card a {
+      color: var(--muted);
+      text-decoration: none;
+      overflow-wrap: anywhere;
+      line-height: 1.7;
+    }
+
+    .contact-card a:hover {
+      color: var(--red-soft);
+    }
+
+    footer {
+      padding: 36px 0;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(34px);
+      transition: 0.8s ease;
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .mobile-menu-btn {
+      display: none;
+      width: 44px;
+      height: 44px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.06);
+      color: var(--white);
+      border-radius: 14px;
+      font-size: 1.4rem;
+    }
+
+    @media (max-width: 920px) {
+      .nav-links {
+        position: fixed;
+        top: 76px;
+        left: 20px;
+        right: 20px;
+        display: none;
+        flex-direction: column;
+        padding: 22px;
+        background: rgba(12, 12, 15, 0.95);
+        border: 1px solid var(--line);
+        border-radius: 24px;
+        backdrop-filter: blur(18px);
+      }
+
+      .nav-links.active {
+        display: flex;
+      }
+
+      .mobile-menu-btn {
+        display: block;
+      }
+
+      .hero-grid,
+      .about-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .hero {
+        padding-top: 70px;
+      }
+
+      .profile-card {
+        max-width: 460px;
+        margin: 0 auto;
+      }
+
+      .skills-grid,
+      .projects-grid,
+      .contact-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .section-head {
+        display: block;
+      }
+
+      .section-desc {
+        margin-top: 18px;
+      }
+    }
+
+    @media (max-width: 620px) {
+      .container {
+        width: min(100% - 26px, 1180px);
+      }
+
+      nav {
+        height: 68px;
+      }
+
+      main {
+        padding-top: 68px;
+      }
+
+      .nav-links {
+        top: 68px;
+      }
+
+      .hero {
+        min-height: auto;
+        padding: 64px 0 40px;
+      }
+
+      h1 {
+        font-size: clamp(3rem, 18vw, 4.7rem);
+      }
+
+      .hero-actions,
+      .btn {
+        width: 100%;
+      }
+
+      .skills-grid,
+      .projects-grid,
+      .contact-grid,
+      .stat-grid {
+        grid-template-columns: 1fr;
+      }
+
+      section {
+        padding: 76px 0;
+      }
+
+      .glass-card {
+        padding: 22px;
+      }
+    }
+  </style>
 </head>
 <body>
+  <canvas class="futuristic-canvas" id="futuristicCanvas"></canvas>
+  <div class="aurora-bg"></div>
+  <div class="hologram-orb one"></div>
+  <div class="hologram-orb two"></div>
+  <div class="grid-bg"></div>
+  <div class="scanline"></div>
+  <div class="particles" id="particles"></div>
 
-  <header class="navbar" id="navbar">
-    <div class="navbar-inner">
-      <a href="#top" class="brand">SM</a>
-      <nav class="nav-links">
-        <a href="#about">About</a>
-        <a href="#projects">Projects</a>
-        <a href="#skills">Skills</a>
-        <a href="#contact">Contact</a>
+  <header>
+    <div class="container">
+      <nav>
+        <div class="logo">
+          <div class="logo-mark">S</div>
+          <span>Samuel.dev</span>
+        </div>
+
+        <button class="mobile-menu-btn" id="menuBtn" aria-label="Open menu">☰</button>
+
+        <div class="nav-links" id="navLinks">
+          <a href="#home">Home</a>
+          <a href="#about">About</a>
+          <a href="#skills">Skills</a>
+          <a href="#projects">Projects</a>
+          <a href="#contact">Contact</a>
+        </div>
       </nav>
-      <a class="btn btn-ghost" href="https://github.com/5amuel02" target="_blank" rel="noopener">GitHub</a>
     </div>
   </header>
 
   <main>
-    <section id="top" class="hero">
-      <p class="eyebrow">Computer Engineering Student</p>
-      <h1>Samuel Manik</h1>
-      <p class="hero-tagline">I build across the whole stack the major covers —
-        <span class="tag tag-software">software</span>,
-        <span class="tag tag-network">networks</span>, and
-        <span class="tag tag-hardware">hardware</span>.
-      </p>
-      <div class="hero-actions">
-        <a class="btn btn-primary" href="#projects">View Projects</a>
-        <a class="btn btn-ghost" href="#contact">Get in Touch</a>
+    <section class="hero" id="home">
+      <div class="container hero-grid">
+        <div class="hero-content reveal">
+          <div class="badge"><span class="pulse"></span> Available for Software, Network & Hardware Projects</div>
+          <h1>Samuel<br><span class="gradient-text">A.S. Manik</span></h1>
+          <div class="typing" id="typingText"></div>
+          <p>
+            I am a Computer Engineering student at Telkom University from North Sumatra, building experience across Android, web, networking, and embedded systems. I enjoy turning ideas into functional digital products, exploring IoT systems, networking, data-driven applications, and modern technology solutions.
+          </p>
+          <div class="hero-actions">
+            <a href="#projects" class="btn">View My Projects</a>
+            <a href="#contact" class="btn secondary">Contact Me</a>
+          </div>
+        </div>
+
+        <div class="profile-card reveal">
+          <div class="profile-img-wrap">
+            <img src="profile.jpg" alt="Samuel A.S. Manik" />
+            <div class="profile-overlay">
+              <h3>Computer Engineering Student</h3>
+              <span>Code • Build • Analyze • Improve</span>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
 
-    <section id="about" class="section">
-      <h2 class="section-title">About</h2>
-      <p class="about-text">
-        I'm a Computer Engineering student who doesn't stick to one layer of the stack.
-        Some weeks that means an Android app end-to-end in Kotlin + Jetpack Compose;
-        others it's a CLI networking toolkit, a browser-based protocol visualizer, or an
-        Arduino-driven PID control loop. I like understanding how things actually work
-        underneath — what a TCP handshake looks like on the wire, why a control loop
-        overshoots, why a query is slow — not just gluing frameworks together.
-      </p>
+    <section id="about">
+      <div class="container">
+        <div class="section-head reveal">
+          <div>
+            <div class="section-kicker">01 / ABOUT ME</div>
+            <h2>Building useful tech with a developer mindset.</h2>
+          </div>
+          <p class="section-desc">
+            My focus is to grow as a developer by combining programming, analytical thinking, and practical problem solving into real projects.
+          </p>
+        </div>
+
+        <div class="about-grid">
+          <div class="glass-card about-card reveal">
+            <h3>Who I Am</h3>
+            <p>
+              I am Samuel A.S. Manik, a Computer Engineering student at Telkom University. I come from North Sumatra and I've gained internship experience in Android development, alongside coursework and personal projects in networking and embedded systems.
+            </p>
+            <div class="stat-grid">
+              <div class="stat">
+                <strong>Android</strong>
+                <span>Main development focus</span>
+              </div>
+              <div class="stat">
+                <strong>Tech</strong>
+                <span>IoT, web, network, and data interest</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="glass-card about-card reveal">
+            <h3>What I Do</h3>
+            <p>
+              I work on mobile applications, web experiments, IoT monitoring concepts, database-connected systems, and technical analysis. I may not define myself by one single strongest skill yet, but I keep improving by building real things, solving technical problems, and learning from every project.
+            </p>
+            <div class="tech-tags">
+              <span class="tag">Android Dev</span>
+              <span class="tag">Kotlin</span>
+              <span class="tag">JavaScript</span>
+              <span class="tag">IoT</span>
+              <span class="tag">MongoDB</span>
+              <span class="tag">Node-RED</span>
+              <span class="tag">MikroTik</span>
+              <span class="tag">Technical Analysis</span>
+              <span class="tag">Mathematics</span>
+            </div>
+          </div>
+        </div>
+      </div>
     </section>
 
-    <section id="projects" class="section">
-      <h2 class="section-title">Projects</h2>
+    <section id="skills">
+      <div class="container">
+        <div class="section-head reveal">
+          <div>
+            <div class="section-kicker">02 / SKILLS</div>
+            <h2>Technical stack and interests.</h2>
+          </div>
+          <p class="section-desc">
+            A flexible combination of software development, analytical thinking, mobile development, and technical experimentation.
+          </p>
+        </div>
 
-      <div class="filter-tabs" id="filter-tabs" role="tablist">
-        <button class="filter-tab active" data-filter="all">All</button>
-        <button class="filter-tab" data-filter="network">🌐 Networking</button>
-        <button class="filter-tab" data-filter="hardware">⚙️ Hardware & Embedded</button>
-        <button class="filter-tab" data-filter="software">💻 Software</button>
-      </div>
+        <div class="skills-grid">
+          <div class="glass-card skill-card reveal">
+            <div class="skill-icon">01</div>
+            <h3>Android Development</h3>
+            <p>Building Android interfaces, activity flows, API integration, RecyclerView-based screens, and mobile app features.</p>
+          </div>
 
-      <div class="project-grid" id="project-grid">
-        <!-- populated by script.js -->
+          <div class="glass-card skill-card reveal">
+            <div class="skill-icon">02</div>
+            <h3>Web Development</h3>
+            <p>Creating responsive web pages with HTML, CSS, JavaScript, animation, and interactive front-end experiences.</p>
+          </div>
+
+          <div class="glass-card skill-card reveal">
+            <div class="skill-icon">03</div>
+            <h3>IoT & Monitoring</h3>
+            <p>Exploring sensor data, Node-RED flows, MQTT concepts, MongoDB storage, and realtime dashboard ideas.</p>
+          </div>
+
+          <div class="glass-card skill-card reveal">
+            <div class="skill-icon">04</div>
+            <h3>Networking</h3>
+            <p>Understanding basic network configuration, MikroTik, firewall concepts, VLAN, NAT, and traffic management.</p>
+          </div>
+
+          <div class="glass-card skill-card reveal">
+            <div class="skill-icon">05</div>
+            <h3>Analytical Thinking</h3>
+            <p>Using mathematics, logic, and technical analysis to understand patterns, solve problems, and make decisions.</p>
+          </div>
+
+          <div class="glass-card skill-card reveal">
+            <div class="skill-icon">06</div>
+            <h3>Problem Solving</h3>
+            <p>Debugging errors, improving project structure, testing features, and turning rough ideas into usable products.</p>
+          </div>
+        </div>
       </div>
     </section>
 
-    <section id="skills" class="section">
-      <h2 class="section-title">Skills</h2>
-      <div class="skills-grid" id="skills-grid">
-        <!-- populated by script.js -->
+    <section id="projects">
+      <div class="container">
+        <div class="section-head reveal">
+          <div>
+            <div class="section-kicker">03 / PROJECTS</div>
+            <h2>Selected projects.</h2>
+          </div>
+          <p class="section-desc">
+            Real builds across mobile, web, networking, and embedded systems — click through for source code and live demos.
+          </p>
+        </div>
+
+        <div class="projects-grid">
+          <!-- CHANGE PROJECTS HERE
+               Duplicate or edit each .project-card below.
+               Change title, description, tags, and emoji/icon. -->
+
+          <article class="glass-card project-card reveal">
+            <div class="project-thumb has-image">
+              <img src="project-android.png" alt="Crack Monitoring Application project image" onerror="this.style.display='none'; this.parentElement.classList.remove('has-image'); this.parentElement.innerHTML='<div class=&quot;project-symbol&quot;>📱</div>';" />
+            </div>
+            <div class="project-content">
+              <h3>Crack Monitoring Application</h3>
+              <p>Android client for real-time drone-based structural crack monitoring, with live YOLO detection status and stream latency tracking. Built during an internship.</p>
+              <div class="tech-tags">
+                <span class="tag">Kotlin</span>
+                <span class="tag">YOLO</span>
+                <span class="tag">Flask</span>
+              </div>
+              <a class="project-link" href="https://github.com/5amuel02/CrackMonitoringApplication" target="_blank" rel="noopener">Source ↗</a>
+            </div>
+          </article>
+
+          <article class="glass-card project-card reveal">
+            <div class="project-thumb has-image">
+              <img src="project-solar.png" alt="Solar System Website project image" onerror="this.style.display='none'; this.parentElement.classList.remove('has-image'); this.parentElement.innerHTML='<div class=&quot;project-symbol&quot;>🌌</div>';" />
+            </div>
+            <div class="project-content">
+              <h3>3D Solar System Website</h3>
+              <p>Interactive 3D solar system built from scratch — orbit camera controls, an asteroid belt and comets, a guided "Voyager Journey" mode, per-planet detail views.</p>
+              <div class="tech-tags">
+                <span class="tag">JavaScript</span>
+                <span class="tag">Three.js</span>
+              </div>
+              <a class="project-link" href="https://github.com/5amuel02/solar-system-website" target="_blank" rel="noopener">Source ↗</a>
+              <a class="project-link" href="https://5amuel02.github.io/solar-system-website/" target="_blank" rel="noopener">Live demo ↗</a>
+            </div>
+          </article>
+
+          <article class="glass-card project-card reveal">
+            <div class="project-thumb has-image">
+              <img src="project-iot.jpg" alt="IoT Sensor Dashboard project image" onerror="this.style.display='none'; this.parentElement.classList.remove('has-image'); this.parentElement.innerHTML='<div class=&quot;project-symbol&quot;>📡</div>';" />
+            </div>
+            <div class="project-content">
+              <h3>IoT Sensor Dashboard</h3>
+              <p>A dashboard for collecting, displaying, and analyzing sensor data using Node-RED flows, MQTT, and MongoDB storage.</p>
+              <div class="tech-tags">
+                <span class="tag">Node-RED</span>
+                <span class="tag">MQTT</span>
+                <span class="tag">MongoDB</span>
+              </div>
+            </div>
+          </article>
+
+          <article class="glass-card project-card reveal">
+            <div class="project-thumb has-image">
+              <img src="pid-arm.jpg" alt="PID Robotic Arm project image" onerror="this.style.display='none'; this.parentElement.classList.remove('has-image'); this.parentElement.innerHTML='<div class=&quot;project-symbol&quot;>🤖</div>';" />
+            </div>
+            <div class="project-content">
+              <h3>PID Robotic Arm</h3>
+              <p>Joystick-controlled 3-axis robotic arm with independent PID position control per axis. Control Systems course project, with full step-response analysis (Mp/Tr/Ess).</p>
+              <div class="tech-tags">
+                <span class="tag">Arduino</span>
+                <span class="tag">C++</span>
+                <span class="tag">PID Control</span>
+              </div>
+              <a class="project-link" href="https://github.com/5amuel02/pid-robotic-arm-control" target="_blank" rel="noopener">Source ↗</a>
+            </div>
+          </article>
+
+          <article class="glass-card project-card reveal">
+            <div class="project-thumb has-image">
+              <img src="network-lab-visualizer.jpg" alt="Network Lab Visualizer project image" onerror="this.style.display='none'; this.parentElement.classList.remove('has-image'); this.parentElement.innerHTML='<div class=&quot;project-symbol&quot;>🛡️</div>';" />
+            </div>
+            <div class="project-content">
+              <h3>Network Lab Visualizer</h3>
+              <p>Interactive browser network simulator — build a topology, send a ping, and watch ARP, MAC learning, longest-prefix routing, and TTL work hop by hop.</p>
+              <div class="tech-tags">
+                <span class="tag">JavaScript</span>
+                <span class="tag">Canvas</span>
+                <span class="tag">Networking</span>
+              </div>
+              <a class="project-link" href="https://github.com/5amuel02/network-lab-visualizer" target="_blank" rel="noopener">Source ↗</a>
+              <a class="project-link" href="https://5amuel02.github.io/network-lab-visualizer/" target="_blank" rel="noopener">Live demo ↗</a>
+            </div>
+          </article>
+
+          <article class="glass-card project-card reveal">
+            <div class="project-thumb has-image">
+              <img src="cybersafe-kids.jpg" alt="Cybersafe Kids project image" onerror="this.style.display='none'; this.parentElement.classList.remove('has-image'); this.parentElement.innerHTML='<div class=&quot;project-symbol&quot;>💬</div>';" />
+            </div>
+            <div class="project-content">
+              <h3>Cybersafe Kids</h3>
+              <p>AI-powered (Google Gemini) cybersecurity education platform for kids — gamified lessons on digital safety, privacy, and phishing awareness.</p>
+              <div class="tech-tags">
+                <span class="tag">Python</span>
+                <span class="tag">Flask</span>
+                <span class="tag">Google Gemini</span>
+              </div>
+              <a class="project-link" href="https://github.com/5amuel02/cybersafe-kids" target="_blank" rel="noopener">Source ↗</a>
+              <a class="project-link" href="https://5amuel02.github.io/cybersafe-kids/" target="_blank" rel="noopener">Live demo ↗</a>
+            </div>
+          </article>
+        </div>
       </div>
     </section>
 
-    <section id="contact" class="section contact-section">
-      <h2 class="section-title">Contact</h2>
-      <p class="about-text">Open to Computer Engineering roles, internships, and collaboration — software, networking, or hardware.</p>
-      <div class="contact-links">
-        <a class="btn btn-primary" href="mailto:samuelasmanik5@gmail.com">Email me</a>
-        <a class="btn btn-ghost" href="https://www.linkedin.com/in/samuel-a-s-manik-4238b1316" target="_blank" rel="noopener">LinkedIn</a>
-        <a class="btn btn-ghost" href="https://github.com/5amuel02" target="_blank" rel="noopener">GitHub</a>
-        <a class="btn btn-ghost" href="https://www.instagram.com/sam.mnk20" target="_blank" rel="noopener">Instagram</a>
+    <section id="contact">
+      <div class="container">
+        <div class="section-head reveal">
+          <div>
+            <div class="section-kicker">04 / CONTACT</div>
+            <h2>Let's connect.</h2>
+          </div>
+          <p class="section-desc">
+            Reach out for collaboration, internship-related discussions, or software, networking, and hardware projects.
+          </p>
+        </div>
+
+        <div class="contact-grid">
+          <div class="glass-card contact-card reveal">
+            <h3>Email</h3>
+            <a href="mailto:samuelasmanik5@gmail.com">samuelasmanik5@gmail.com</a>
+          </div>
+
+          <div class="glass-card contact-card reveal">
+            <h3>Instagram</h3>
+            <a href="https://instagram.com/sam.mnk20" target="_blank" rel="noopener">@sam.mnk20</a>
+          </div>
+
+          <div class="glass-card contact-card reveal">
+            <h3>LinkedIn</h3>
+            <a href="https://www.linkedin.com/in/samuel-a-s-manik-4238b1316" target="_blank" rel="noopener">Samuel A.S. Manik</a>
+          </div>
+
+          <div class="glass-card contact-card reveal">
+            <h3>GitHub</h3>
+            <a href="https://github.com/5amuel02" target="_blank" rel="noopener">5amuel02</a>
+          </div>
+        </div>
       </div>
     </section>
   </main>
 
-  <footer class="site-footer">
-    <p>Built from scratch — vanilla HTML/CSS/JS, no framework, no dependencies.</p>
+  <footer>
+    <div class="container">
+      <p>© <span id="year"></span> Samuel A.S. Manik. Built with passion, code, and technology.</p>
+    </div>
   </footer>
 
-  <script src="script.js" defer></script>
+  <script>
+    const menuBtn = document.getElementById('menuBtn');
+    const navLinks = document.getElementById('navLinks');
+
+    menuBtn.addEventListener('click', () => {
+      navLinks.classList.toggle('active');
+    });
+
+    document.querySelectorAll('.nav-links a').forEach(link => {
+      link.addEventListener('click', () => navLinks.classList.remove('active'));
+    });
+
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    const phrases = [
+      'Android & Web Developer',
+      'Computer Engineering Student',
+      'Network & Hardware Enthusiast',
+      'Problem Solver',
+      'Future-Ready Engineer'
+    ];
+
+    const typingText = document.getElementById('typingText');
+    let phraseIndex = 0;
+    let charIndex = 0;
+    let deleting = false;
+
+    function typeEffect() {
+      const current = phrases[phraseIndex];
+      if (!deleting) {
+        typingText.textContent = current.slice(0, charIndex + 1) + '|';
+        charIndex++;
+        if (charIndex === current.length) {
+          deleting = true;
+          setTimeout(typeEffect, 1200);
+          return;
+        }
+      } else {
+        typingText.textContent = current.slice(0, charIndex - 1) + '|';
+        charIndex--;
+        if (charIndex === 0) {
+          deleting = false;
+          phraseIndex = (phraseIndex + 1) % phrases.length;
+        }
+      }
+      setTimeout(typeEffect, deleting ? 45 : 80);
+    }
+
+    typeEffect();
+
+    const revealElements = document.querySelectorAll('.reveal');
+    const revealObserver = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.14 });
+
+    revealElements.forEach(el => revealObserver.observe(el));
+
+    const particles = document.getElementById('particles');
+    const particleCount = 70;
+
+    for (let i = 0; i < particleCount; i++) {
+      const particle = document.createElement('span');
+      particle.className = 'particle';
+      particle.style.left = Math.random() * 100 + '%';
+      particle.style.animationDuration = 5 + Math.random() * 10 + 's';
+      particle.style.animationDelay = Math.random() * 8 + 's';
+      particle.style.opacity = 0.25 + Math.random() * 0.75;
+      particles.appendChild(particle);
+    }
+
+    const canvas = document.getElementById('futuristicCanvas');
+    const ctx = canvas.getContext('2d');
+    let nodes = [];
+    let mouse = { x: null, y: null };
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth * window.devicePixelRatio;
+      canvas.height = window.innerHeight * window.devicePixelRatio;
+      canvas.style.width = window.innerWidth + 'px';
+      canvas.style.height = window.innerHeight + 'px';
+      ctx.setTransform(window.devicePixelRatio, 0, 0, window.devicePixelRatio, 0, 0);
+      createNodes();
+    }
+
+    function createNodes() {
+      const total = window.innerWidth < 768 ? 42 : 78;
+      nodes = Array.from({ length: total }, () => ({
+        x: Math.random() * window.innerWidth,
+        y: Math.random() * window.innerHeight,
+        vx: (Math.random() - 0.5) * 0.45,
+        vy: (Math.random() - 0.5) * 0.45,
+        r: 1.2 + Math.random() * 1.8
+      }));
+    }
+
+    function drawNetwork() {
+      ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+
+      nodes.forEach(node => {
+        node.x += node.vx;
+        node.y += node.vy;
+
+        if (node.x < 0 || node.x > window.innerWidth) node.vx *= -1;
+        if (node.y < 0 || node.y > window.innerHeight) node.vy *= -1;
+
+        ctx.beginPath();
+        ctx.arc(node.x, node.y, node.r, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(255, 64, 88, 0.75)';
+        ctx.shadowColor = 'rgba(255, 31, 61, 0.85)';
+        ctx.shadowBlur = 12;
+        ctx.fill();
+        ctx.shadowBlur = 0;
+      });
+
+      for (let i = 0; i < nodes.length; i++) {
+        for (let j = i + 1; j < nodes.length; j++) {
+          const dx = nodes[i].x - nodes[j].x;
+          const dy = nodes[i].y - nodes[j].y;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+
+          if (distance < 130) {
+            ctx.beginPath();
+            ctx.moveTo(nodes[i].x, nodes[i].y);
+            ctx.lineTo(nodes[j].x, nodes[j].y);
+            ctx.strokeStyle = `rgba(255, 31, 61, ${0.16 * (1 - distance / 130)})`;
+            ctx.lineWidth = 1;
+            ctx.stroke();
+          }
+        }
+
+        if (mouse.x !== null) {
+          const dx = nodes[i].x - mouse.x;
+          const dy = nodes[i].y - mouse.y;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+
+          if (distance < 190) {
+            ctx.beginPath();
+            ctx.moveTo(nodes[i].x, nodes[i].y);
+            ctx.lineTo(mouse.x, mouse.y);
+            ctx.strokeStyle = `rgba(255, 255, 255, ${0.18 * (1 - distance / 190)})`;
+            ctx.lineWidth = 1;
+            ctx.stroke();
+          }
+        }
+      }
+
+      requestAnimationFrame(drawNetwork);
+    }
+
+    window.addEventListener('mousemove', event => {
+      mouse.x = event.clientX;
+      mouse.y = event.clientY;
+    });
+
+    window.addEventListener('mouseleave', () => {
+      mouse.x = null;
+      mouse.y = null;
+    });
+
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+    drawNetwork();
+
+    document.querySelectorAll('.profile-card, .glass-card').forEach(card => {
+      card.addEventListener('mousemove', event => {
+        const rect = card.getBoundingClientRect();
+        const x = event.clientX - rect.left;
+        const y = event.clientY - rect.top;
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
+        const rotateX = ((y - centerY) / centerY) * -4;
+        const rotateY = ((x - centerX) / centerX) * 4;
+        card.style.transform = `perspective(900px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-6px)`;
+      });
+
+      card.addEventListener('mouseleave', () => {
+        card.style.transform = '';
+      });
+    });
+  </script>
 </body>
 </html>
