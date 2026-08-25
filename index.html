@@ -14,6 +14,21 @@
 
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23ff1f3d'/%3E%3Ctext x='32' y='45' font-family='monospace' font-size='38' font-weight='bold' fill='%23fff' text-anchor='middle'%3ES%3C/text%3E%3C/svg%3E" />
 
+  <!-- Decide motion before first paint so nothing flashes. The OS preference
+       is the default; a visitor can override it and that choice is stored. -->
+  <script>
+    (function () {
+      var on;
+      try {
+        var saved = localStorage.getItem('motion-pref');
+        on = saved === null
+          ? !matchMedia('(prefers-reduced-motion: reduce)').matches
+          : saved === 'on';
+      } catch (e) { on = true; }
+      document.documentElement.classList.add(on ? 'motion-on' : 'motion-off');
+    })();
+  </script>
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
@@ -1307,6 +1322,41 @@
 
     .to-top.show { opacity: 1; visibility: visible; transform: none; }
 
+    /* Motion toggle sits just above the back-to-top button */
+    .motion-toggle {
+      position: fixed;
+      right: 24px;
+      bottom: 84px;
+      width: 48px;
+      height: 48px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      border: 1px solid rgba(255, 31, 61, 0.4);
+      background: rgba(12, 6, 8, 0.8);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      color: var(--white);
+      cursor: pointer;
+      z-index: 45;
+      font-size: 0.9rem;
+      transition: background 0.4s var(--ease), box-shadow 0.4s var(--ease), transform 0.4s var(--ease-out);
+    }
+
+    .motion-toggle:hover {
+      background: rgba(255, 31, 61, 0.22);
+      box-shadow: 0 0 26px rgba(255, 31, 61, 0.35);
+      transform: translateY(-3px);
+    }
+
+    /* Label swaps with the state */
+    html.motion-on .motion-toggle .icon-play,
+    html.motion-off .motion-toggle .icon-pause { display: none; }
+
+    @media (max-width: 620px) {
+      .motion-toggle { right: 16px; bottom: 72px; }
+    }
+
     .to-top:hover {
       background: rgba(255, 31, 61, 0.22);
       box-shadow: 0 0 26px rgba(255, 31, 61, 0.35);
@@ -1384,21 +1434,27 @@
     /* ============================================================
        REDUCED MOTION
        ============================================================ */
-    @media (prefers-reduced-motion: reduce) {
-      html { scroll-behavior: auto; }
-      *, *::before, *::after {
-        animation-duration: 0.001ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.001ms !important;
-      }
-      .reveal { opacity: 1; transform: none; }
-      .char { opacity: 1; transform: none; }
-      /* Reduced motion means less movement, not a stripped-back page: the
-         particle field and network stay, they just stop moving (script.js
-         paints them once and leaves them). Only the sweeping scanline and the
-         cursor light, which are pure motion, are dropped. */
-      .scanline, .cursor-glow { display: none; }
+    /* Driven by a class, not the media query directly, so the toggle can
+       override the OS preference in either direction. The inline head script
+       seeds the class from `prefers-reduced-motion` on a first visit. */
+    html.motion-off { scroll-behavior: auto; }
+
+    html.motion-off *,
+    html.motion-off *::before,
+    html.motion-off *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
     }
+
+    html.motion-off .reveal { opacity: 1; transform: none; }
+    html.motion-off .char { opacity: 1; transform: none; }
+
+    /* Reduced motion means less movement, not a stripped-back page: the
+       particle field and network stay, they just stop moving. Only the
+       sweeping scanline and the cursor light, which are pure motion, go. */
+    html.motion-off .scanline,
+    html.motion-off .cursor-glow { display: none; }
   </style>
 </head>
 <body class="is-loading">
@@ -1788,14 +1844,34 @@
     </div>
   </footer>
 
+  <button class="motion-toggle" id="motionToggle" aria-label="Turn animation on or off">
+    <span class="icon-pause" aria-hidden="true">❙❙</span>
+    <span class="icon-play" aria-hidden="true">▶</span>
+  </button>
+
   <button class="to-top" id="toTop" aria-label="Back to top">↑</button>
 
   <script>
   (function () {
     'use strict';
 
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    // Seeded in <head> from the OS preference, overridable by the toggle.
+    const reduced = document.documentElement.classList.contains('motion-off');
     const finePointer = window.matchMedia('(pointer: fine)').matches;
+
+    /* ---------- Motion toggle ---------- */
+    const motionBtn = document.getElementById('motionToggle');
+    if (motionBtn) {
+      motionBtn.setAttribute('aria-pressed', String(!reduced));
+      motionBtn.title = reduced ? 'Turn animation on' : 'Turn animation off';
+      motionBtn.addEventListener('click', () => {
+        try { localStorage.setItem('motion-pref', reduced ? 'on' : 'off'); } catch (e) {}
+        // Half the page decides how to behave at start-up — the particle
+        // field, the canvas loop, the typing — so re-run it rather than try
+        // to hot-swap every piece.
+        location.reload();
+      });
+    }
 
     /* ---------- Preloader ---------- */
     const preloader = document.getElementById('preloader');
