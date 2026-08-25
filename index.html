@@ -996,11 +996,49 @@
 
     /* Carries the scatter. The card inside keeps its own hover transform. */
     .skill-slot {
+      position: relative;
       display: flex;
       will-change: transform;
     }
 
     .skill-slot > .skill-card { width: 100%; }
+
+    /* ---- Glass shatter ----
+       Wedge-shaped clones of the card, cut radially from one impact point so
+       they tile it exactly. Hidden until the break starts, so there are no
+       hairline seams while the card is intact. */
+    .shards {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0;
+    }
+
+    .slot-shattered > .shards { opacity: 1; }
+
+    /* The real card stays in the accessibility tree — only its pixels go.
+       Needs to outrank `.reveal.visible`, which sets opacity:1 further down
+       the sheet at the same specificity. */
+    .skill-slot.slot-shattered > .skill-card { opacity: 0; }
+
+    .shard {
+      position: absolute;
+      inset: 0;
+      will-change: transform, opacity;
+    }
+
+    .shard > .skill-card {
+      width: 100%;
+      height: 100%;
+      /* A lit edge along the break, so a shard reads as glass rather than a
+         rectangle with a corner missing. */
+      box-shadow: inset 0 0 0 1px rgba(255, 120, 140, 0.32);
+      /* The card blurs whatever is behind it. Inherited by every clone that
+         would be dozens of backdrop filters compositing at once, for a blur
+         nobody can see on a fragment mid-flight. */
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+    }
 
     .skill-card { min-height: 190px; }
 
@@ -2506,6 +2544,60 @@
       });
     }
 
+    /* Cut one card into wedges radiating from a single off-centre impact
+       point. Sharing each boundary angle between neighbouring wedges is what
+       makes them tile with no gap or overlap. Built on first break, not on
+       load, so an untouched page never pays for it. */
+    const SHARDS = 7;
+
+    function buildShards(slot) {
+      const card = slot.querySelector('.skill-card');
+      if (!card) return;
+
+      const host = document.createElement('div');
+      host.className = 'shards';
+      host.setAttribute('aria-hidden', 'true');
+
+      const cx = 34 + Math.random() * 32;
+      const cy = 32 + Math.random() * 34;
+      const step = 360 / SHARDS;
+      const R = 320;                       // well past the corners
+
+      const angles = [];
+      for (let i = 0; i < SHARDS; i++) {
+        angles.push(i * step + (Math.random() * 18 - 9));
+      }
+      angles.push(angles[0] + 360);
+
+      for (let i = 0; i < SHARDS; i++) {
+        const a1 = angles[i] * Math.PI / 180;
+        const a2 = angles[i + 1] * Math.PI / 180;
+
+        const shard = document.createElement('div');
+        shard.className = 'shard';
+        shard.style.clipPath =
+          `polygon(${cx}% ${cy}%, ` +
+          `${(cx + R * Math.cos(a1)).toFixed(1)}% ${(cy + R * Math.sin(a1)).toFixed(1)}%, ` +
+          `${(cx + R * Math.cos(a2)).toFixed(1)}% ${(cy + R * Math.sin(a2)).toFixed(1)}%)`;
+
+        const clone = card.cloneNode(true);
+        clone.classList.remove('reveal');
+        clone.removeAttribute('style');
+        shard.appendChild(clone);
+
+        const mid = (a1 + a2) / 2;
+        shard._dx = Math.cos(mid);
+        shard._dy = Math.sin(mid);
+        shard._rot = (Math.random() * 2 - 1) * 34;
+        shard._speed = 0.75 + Math.random() * 0.6;   // uneven, like real glass
+
+        host.appendChild(shard);
+      }
+
+      slot.appendChild(host);
+      slot._shards = [...host.children];
+    }
+
     function applyScatter() {
       if (!slots.length || !skillsSection) return;
 
@@ -2519,24 +2611,48 @@
       lastScatter = p;
 
       const amp = reduced ? 0.4 : 1;
-      const eased = p * p;   // holds together a little longer before flying apart
+      const eased = p * p;   // holds together a little longer before it goes
 
       slots.forEach(s => {
-        if (p === 0) {
+        if (p <= 0.001) {
+          s.classList.remove('slot-shattered');
           s.style.transform = '';
-          s.style.opacity = '';
+          if (s._shards) s._shards.forEach(sh => { sh.style.transform = ''; sh.style.opacity = ''; });
           return;
         }
-        const tx = s._vx * eased * 210 * amp;
-        const ty = s._vy * eased * 130 * amp;
-        const rot = s._vx * eased * 12 * amp;
-        const sc = 1 - eased * 0.14 * amp;
-        s.style.transform = `translate3d(${tx.toFixed(1)}px, ${ty.toFixed(1)}px, 0) rotate(${rot.toFixed(2)}deg) scale(${sc.toFixed(3)})`;
-        s.style.opacity = (1 - eased * 0.7 * amp).toFixed(3);
+
+        if (!s._shards) buildShards(s);
+        s.classList.add('slot-shattered');
+
+        // The pane itself drifts a little; the shards do most of the travel.
+        s.style.transform =
+          `translate3d(${(s._vx * eased * 60 * amp).toFixed(1)}px, ${(s._vy * eased * 34 * amp).toFixed(1)}px, 0)`;
+
+        s._shards.forEach(sh => {
+          const q = Math.min(1, eased * sh._speed);
+          const d = q * 300 * amp;
+          sh.style.transform =
+            `translate3d(${(sh._dx * d).toFixed(1)}px, ${(sh._dy * d).toFixed(1)}px, 0) ` +
+            `rotate(${(sh._rot * q).toFixed(2)}deg) scale(${(1 - q * 0.12).toFixed(3)})`;
+          sh.style.opacity = (1 - q * 0.92 * amp).toFixed(3);
+        });
       });
     }
 
     measureSlots();
+
+    // Cloning six cards into forty-two shards costs a frame. Do it while the
+    // section is still off screen rather than on the first scroll that breaks
+    // it, which is exactly when a dropped frame would be seen.
+    if (skillsSection && slots.length) {
+      const prep = new IntersectionObserver((entries) => {
+        if (!entries.some(e => e.isIntersecting)) return;
+        prep.disconnect();
+        slots.forEach(s => { if (!s._shards) buildShards(s); });
+      }, { rootMargin: '700px 0px' });
+      prep.observe(skillsSection);
+    }
+
     window.addEventListener('resize', () => {
       lastScatter = -1;
       measureSlots();
