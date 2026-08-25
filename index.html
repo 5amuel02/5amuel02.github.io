@@ -1951,9 +1951,15 @@
     if (markSpin) {
       const LAYERS = 18;
       const DEPTH = 1.25;            // px between layers
-      const IMPULSE = 0.055;         // deg of spin per px of scroll
+      const IMPULSE = 0.075;         // deg of spin per px of scroll
       const FRICTION = 0.94;         // how quickly the coast decays
-      const MAX_VEL = 9;
+      const MAX_VEL = 14;
+
+      // Scroll-scrubbed motion only moves while the reader is scrolling, so it
+      // stays on under reduced-motion — just gentler. Cutting it as hard as the
+      // ambient effects made it read as broken rather than calm.
+      const IMPULSE_SCALE = reduced ? 0.8 : 1;
+      const DECAY = reduced ? 0.90 : FRICTION;
       const half = ((LAYERS - 1) * DEPTH) / 2;
 
       const frag = document.createDocumentFragment();
@@ -2005,7 +2011,7 @@
         const delta = y - lastScroll;
         lastScroll = y;
         if (!onStage) return;
-        vel += delta * IMPULSE * (reduced ? 0.3 : 1);
+        vel += delta * IMPULSE * IMPULSE_SCALE;
         vel = Math.max(-MAX_VEL, Math.min(MAX_VEL, vel));
         if (!hasSpun && Math.abs(delta) > 0) {
           hasSpun = true;
@@ -2017,7 +2023,7 @@
 
       function spinLoop() {
         angle += vel;
-        vel *= reduced ? 0.75 : FRICTION;
+        vel *= DECAY;
         if (Math.abs(vel) < 0.002) vel = 0;
 
         // Left alone, the coast can end edge-on, where a stack of flat layers
