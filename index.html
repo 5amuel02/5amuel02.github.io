@@ -994,72 +994,23 @@
        ============================================================ */
     .skills-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
 
-    /* Carries the scatter. The card inside keeps its own hover transform. */
-    .skill-slot {
-      position: relative;
-      display: flex;
-      will-change: transform;
+    /* ---- Decode ----
+       While a line is still resolving it glows and sits in the mono face, so
+       the scramble reads as machine output rather than broken text. Mono also
+       keeps every character the same width, which is what stops the lines
+       re-wrapping on every frame as the characters change. */
+    [data-decode].decoding {
+      font-family: var(--mono);
+      color: var(--red-soft);
+      text-shadow: 0 0 12px rgba(255, 31, 61, 0.45);
+      /* Height is pinned to the finished text while decoding (see script.js),
+         so nothing on the page shifts as the characters change. */
+      overflow: hidden;
     }
 
-    .skill-slot > .skill-card { width: 100%; }
-
-    /* ---- Glass shatter ----
-       Wedge-shaped clones of the card, cut radially from one impact point so
-       they tile it exactly. Hidden until the break starts, so there are no
-       hairline seams while the card is intact. */
-    .shards {
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      opacity: 0;
-      /* Gives the fragments somewhere to tumble into. Without it they only
-         ever slide across the page, which never reads as glass. */
-      perspective: 820px;
-      transform-style: preserve-3d;
-    }
-
-    .slot-shattered > .shards { opacity: 1; }
-
-    /* The real card stays in the accessibility tree — only its pixels go.
-       Needs to outrank `.reveal.visible`, which sets opacity:1 further down
-       the sheet at the same specificity. */
-    .skill-slot.slot-shattered > .skill-card { opacity: 0; }
-
-    .shard {
-      position: absolute;
-      inset: 0;
-      will-change: transform, opacity;
-      backface-visibility: hidden;
-    }
-
-    /* Catches the "light" as a fragment turns, so an edge flashes rather than
-       the whole piece just dimming. Measured at ~14fps for the full set, so
-       only the centre pieces carry it — they are nearest the impact, move
-       most, and are what the eye actually follows. */
-    .shard.glint::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(135deg,
-        rgba(255, 255, 255, 0.38) 0%,
-        rgba(255, 120, 140, 0.12) 38%,
-        transparent 62%);
-      opacity: var(--glint, 0);
-      pointer-events: none;
-    }
-
-    .shard > .skill-card {
-      width: 100%;
-      height: 100%;
-      /* A lit edge along the break, so a shard reads as glass rather than a
-         rectangle with a corner missing. */
-      box-shadow: inset 0 0 0 1px rgba(255, 120, 140, 0.32);
-      /* The card blurs whatever is behind it. Inherited by every clone that
-         would be dozens of backdrop filters compositing at once, for a blur
-         nobody can see on a fragment mid-flight. */
-      backdrop-filter: none;
-      -webkit-backdrop-filter: none;
-    }
+    /* Mono is wider than Inter, so the body copy would run to more lines and
+       spill past its pinned height. Titles stay on one line either way. */
+    .skill-card p[data-decode].decoding { font-size: 0.86em; }
 
     .skill-card { min-height: 190px; }
 
@@ -1712,56 +1663,41 @@
           </p>
         </div>
 
-        <!-- Each card sits in its own slot: the slot carries the scroll-driven
-             scatter, the card keeps its own hover tilt, so the two transforms
-             never overwrite each other. -->
         <div class="skills-grid" id="skillsGrid">
-          <div class="skill-slot">
-            <div class="glass-card skill-card reveal">
-              <div class="skill-icon">01</div>
-              <h3>Android Development</h3>
-              <p>Building Android interfaces, activity flows, API integration, RecyclerView-based screens, and mobile app features.</p>
-            </div>
+          <div class="glass-card skill-card reveal">
+            <div class="skill-icon" data-decode>01</div>
+            <h3 data-decode>Android Development</h3>
+            <p data-decode>Building Android interfaces, activity flows, API integration, RecyclerView-based screens, and mobile app features.</p>
           </div>
 
-          <div class="skill-slot">
-            <div class="glass-card skill-card reveal" style="--d: 90ms">
-              <div class="skill-icon">02</div>
-              <h3>Web Development</h3>
-              <p>Creating responsive web pages with HTML, CSS, JavaScript, animation, and interactive front-end experiences.</p>
-            </div>
+          <div class="glass-card skill-card reveal" style="--d: 90ms">
+            <div class="skill-icon" data-decode>02</div>
+            <h3 data-decode>Web Development</h3>
+            <p data-decode>Creating responsive web pages with HTML, CSS, JavaScript, animation, and interactive front-end experiences.</p>
           </div>
 
-          <div class="skill-slot">
-            <div class="glass-card skill-card reveal" style="--d: 180ms">
-              <div class="skill-icon">03</div>
-              <h3>IoT &amp; Monitoring</h3>
-              <p>Exploring sensor data, Node-RED flows, MQTT concepts, MongoDB storage, and realtime dashboard ideas.</p>
-            </div>
+          <div class="glass-card skill-card reveal" style="--d: 180ms">
+            <div class="skill-icon" data-decode>03</div>
+            <h3 data-decode>IoT &amp; Monitoring</h3>
+            <p data-decode>Exploring sensor data, Node-RED flows, MQTT concepts, MongoDB storage, and realtime dashboard ideas.</p>
           </div>
 
-          <div class="skill-slot">
-            <div class="glass-card skill-card reveal">
-              <div class="skill-icon">04</div>
-              <h3>Networking</h3>
-              <p>Understanding network configuration, MikroTik, firewall concepts, VLAN, NAT, TCP/IP internals, and traffic management.</p>
-            </div>
+          <div class="glass-card skill-card reveal">
+            <div class="skill-icon" data-decode>04</div>
+            <h3 data-decode>Networking</h3>
+            <p data-decode>Understanding network configuration, MikroTik, firewall concepts, VLAN, NAT, TCP/IP internals, and traffic management.</p>
           </div>
 
-          <div class="skill-slot">
-            <div class="glass-card skill-card reveal" style="--d: 90ms">
-              <div class="skill-icon">05</div>
-              <h3>Analytical Thinking</h3>
-              <p>Using mathematics, logic, and technical analysis to understand patterns, solve problems, and make decisions.</p>
-            </div>
+          <div class="glass-card skill-card reveal" style="--d: 90ms">
+            <div class="skill-icon" data-decode>05</div>
+            <h3 data-decode>Analytical Thinking</h3>
+            <p data-decode>Using mathematics, logic, and technical analysis to understand patterns, solve problems, and make decisions.</p>
           </div>
 
-          <div class="skill-slot">
-            <div class="glass-card skill-card reveal" style="--d: 180ms">
-              <div class="skill-icon">06</div>
-              <h3>Problem Solving</h3>
-              <p>Debugging errors, improving project structure, testing features, and turning rough ideas into usable products.</p>
-            </div>
+          <div class="glass-card skill-card reveal" style="--d: 180ms">
+            <div class="skill-icon" data-decode>06</div>
+            <h3 data-decode>Problem Solving</h3>
+            <p data-decode>Debugging errors, improving project structure, testing features, and turning rough ideas into usable products.</p>
           </div>
         </div>
       </div>
@@ -2530,236 +2466,95 @@
       }
     }
 
-    /* ---------- Skills grid: scatters as it leaves, reassembles coming back ----
-       Scroll-scrubbed, so it is reversible by definition — the position of the
-       section is the only input, and scrolling back up simply replays it. */
-    const skillsGrid = document.getElementById('skillsGrid');
-    const skillsSection = document.getElementById('skills');
-    const slots = skillsGrid ? [...skillsGrid.querySelectorAll('.skill-slot')] : [];
-    let lastScatter = -1;
+    /* ---------- Decode: scramble, then resolve ----------
+       Triggered once when a card arrives and then run on its own clock, so
+       how fast the reader scrolls has no bearing on how it looks. That is the
+       whole reason for picking it: a scroll-scrubbed effect inherits the
+       chunkiness of a wheel notch, and this one cannot. */
+    const DECODE_CHARS = '!<>-_\/[]{}=+*^?#$%&@0123456789ABCDEFXYZ';
 
-    // Direction is read from where each card actually sits, so a 3-, 2- or
-    // 1-column layout each scatter sensibly without hardcoding the grid.
-    function measureSlots() {
-      if (!slots.length) return;
-      let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    function decodeText(el, duration) {
+      const original = el.dataset.decodeText || el.textContent;
+      el.dataset.decodeText = original;
 
-      slots.forEach(s => {
-        // offsetLeft/Top are layout positions — unaffected by any transform
-        // we may already have applied.
-        s._cx = s.offsetLeft + s.offsetWidth / 2;
-        s._cy = s.offsetTop + s.offsetHeight / 2;
-        minX = Math.min(minX, s._cx); maxX = Math.max(maxX, s._cx);
-        minY = Math.min(minY, s._cy); maxY = Math.max(maxY, s._cy);
-      });
-
-      const midX = (minX + maxX) / 2, midY = (minY + maxY) / 2;
-      const spanX = (maxX - minX) / 2, spanY = (maxY - minY) / 2;
-      const singleColumn = spanX < 10;
-
-      slots.forEach((s, i) => {
-        // Stacked in one column there is no horizontal spread to read, so
-        // alternate sides instead of letting everything slide straight down.
-        s._vx = singleColumn ? (i % 2 ? 0.85 : -0.85) : (s._cx - midX) / spanX;
-        s._vy = spanY < 10 ? 0 : (s._cy - midY) / spanY;
-      });
-    }
-
-    /* Real glass does not break into equal pie slices. It breaks along cracks
-       running out from the impact and along others circling it, which leaves
-       a few small pieces at the centre and larger ones further out. So: one
-       ring of irregular radius, triangles inside it, quads outside — every
-       boundary shared with its neighbour so the pieces tile the card exactly.
-       Cracks are straight, so straight chords are the honest shape here. */
-    const SECTORS = 4;
-
-    function buildShards(slot) {
-      const card = slot.querySelector('.skill-card');
-      if (!card) return;
-
-      const host = document.createElement('div');
-      host.className = 'shards';
-      host.setAttribute('aria-hidden', 'true');
-
-      const cx = 34 + Math.random() * 32;
-      const cy = 32 + Math.random() * 34;
-      const step = 360 / SECTORS;
-      const OUT = 320;                       // well past the corners
-
-      // Shared boundaries: ragged radii, uneven angles.
-      const ang = [], rad = [];
-      for (let i = 0; i < SECTORS; i++) {
-        ang.push((i * step + (Math.random() * 22 - 11)) * Math.PI / 180);
-        rad.push(20 + Math.random() * 20);
-      }
-      ang.push(ang[0] + Math.PI * 2);
-      rad.push(rad[0]);
-
-      const at = (r, i) => [
-        (cx + r * Math.cos(ang[i])).toFixed(1),
-        (cy + r * Math.sin(ang[i])).toFixed(1)
-      ];
-
-      function addShard(points, midAngle, ring) {
-        const shard = document.createElement('div');
-        shard.className = ring === 0 ? 'shard glint' : 'shard';
-        shard.style.clipPath = `polygon(${points.map(p => p[0] + '% ' + p[1] + '%').join(', ')})`;
-
-        const clone = card.cloneNode(true);
-        clone.classList.remove('reveal');
-        clone.removeAttribute('style');
-        shard.appendChild(clone);
-
-        shard._dx = Math.cos(midAngle);
-        shard._dy = Math.sin(midAngle);
-        // Centre pieces are struck head-on, so they come at the viewer; the
-        // outer ring mostly sails past and away.
-        shard._dz = ring === 0
-          ? 120 + Math.random() * 220
-          : -60 - Math.random() * 260;
-        shard._rx = (Math.random() * 2 - 1) * 150;
-        shard._ry = (Math.random() * 2 - 1) * 150;
-        shard._rz = (Math.random() * 2 - 1) * 70;
-        shard._speed = 0.7 + Math.random() * 0.75;
-        // The middle lets go first; the crack needs a moment to reach the edge.
-        shard._delay = ring === 0 ? 0 : 0.10 + Math.random() * 0.12;
-
-        host.appendChild(shard);
+      const n = original.length;
+      // Resolve roughly left to right, but jittered so it never looks swept.
+      const settle = [];
+      for (let i = 0; i < n; i++) {
+        settle.push((i / n) * 0.68 + Math.random() * 0.32);
       }
 
-      for (let i = 0; i < SECTORS; i++) {
-        const mid = (ang[i] + ang[i + 1]) / 2;
-        // inner triangle: impact point out to the ring
-        addShard([[cx.toFixed(1), cy.toFixed(1)], at(rad[i], i), at(rad[i + 1], i + 1)], mid, 0);
-        // outer quad: ring out past the edge
-        addShard([at(rad[i], i), at(OUT, i), at(OUT, i + 1), at(rad[i + 1], i + 1)], mid, 1);
-      }
+      const scrambled = new Array(n);
+      let churn = 0;
 
-      slot.appendChild(host);
-      slot._shards = [...host.children];
-    }
+      // Pin the box to the height the finished text needs before swapping in
+      // the mono face, otherwise every card grows and shoves the grid around
+      // for the duration of the effect.
+      el.style.height = el.offsetHeight + 'px';
 
-    function applyScatter(scrollValue) {
-      if (!slots.length || !skillsSection) return;
+      const t0 = performance.now();
+      el.classList.add('decoding');
 
-      const rect = skillsSection.getBoundingClientRect();
-      const vh = window.innerHeight;
-      // Absolute position, so the break can be driven by the damped scroll
-      // value instead of wherever the scrollbar happens to be this instant.
-      const topAt = (rect.top + window.scrollY) - scrollValue;
-      // 0 while the section is centred, rising to 1 as it travels up and out.
-      const past = vh / 2 - (topAt + rect.height / 2);
-      // Spread over most of a screen height: the break should be something you
-      // scroll *through*, not a switch you trip past.
-      const p = Math.max(0, Math.min(1, past / (vh * 1.15)));
+      (function frame(now) {
+        const p = Math.min(1, (now - t0) / duration);
+        // Re-roll a fraction of the unresolved glyphs per frame; rolling all
+        // of them every frame reads as noise rather than as working.
+        const roll = ++churn % 2 === 0;
+        let out = '';
 
-      if (Math.abs(p - lastScatter) < 0.0004) return;
-      lastScatter = p;
-
-      const amp = reduced ? 0.4 : 1;
-      // Gentler than a square: holds together at first, but the cracking stage
-      // lasts long enough to actually be seen.
-      const eased = Math.pow(p, 1.35);
-
-      slots.forEach(s => {
-        if (p <= 0.001) {
-          s.classList.remove('slot-shattered');
-          s.style.transform = '';
-          if (s._shards) s._shards.forEach(sh => { sh.style.transform = ''; sh.style.opacity = ''; });
-          return;
+        for (let i = 0; i < n; i++) {
+          const ch = original[i];
+          if (p >= settle[i] || ch === ' ' || ch === '\n') { out += ch; continue; }
+          if (roll || scrambled[i] === undefined) {
+            scrambled[i] = DECODE_CHARS[(Math.random() * DECODE_CHARS.length) | 0];
+          }
+          out += scrambled[i];
         }
 
-        if (!s._shards) buildShards(s);
-        s.classList.add('slot-shattered');
+        el.textContent = out;
 
-        // The pane itself drifts a little; the shards do most of the travel.
-        s.style.transform =
-          `translate3d(${(s._vx * eased * 60 * amp).toFixed(1)}px, ${(s._vy * eased * 34 * amp).toFixed(1)}px, 0)`;
-
-        s._shards.forEach(sh => {
-          // Each fragment runs its own clock: nothing lets go at the same
-          // instant, which is what stops it looking mechanical.
-          const raw = (eased - sh._delay) / (1 - sh._delay);
-          const q = Math.max(0, Math.min(1, raw * sh._speed));
-
-          if (q === 0) { sh.style.transform = ''; sh.style.opacity = ''; sh.style.setProperty('--glint', '0'); return; }
-
-          const d = q * 300 * amp;
-          const fall = q * q * 90 * amp;          // picks up speed downward
-          const tz = sh._dz * q * amp;
-
-          sh.style.transform =
-            `translate3d(${(sh._dx * d).toFixed(1)}px, ${(sh._dy * d + fall).toFixed(1)}px, ${tz.toFixed(1)}px) ` +
-            `rotateX(${(sh._rx * q).toFixed(1)}deg) ` +
-            `rotateY(${(sh._ry * q).toFixed(1)}deg) ` +
-            `rotateZ(${(sh._rz * q).toFixed(1)}deg)`;
-
-          // Brightest just after it breaks free, then gone as it tumbles off.
-          sh.style.setProperty('--glint', (Math.sin(Math.min(1, q * 1.6) * Math.PI) * 0.85).toFixed(3));
-          sh.style.opacity = (1 - q * 0.95 * amp).toFixed(3);
-        });
-      });
+        if (p < 1) {
+          requestAnimationFrame(frame);
+        } else {
+          el.textContent = original;
+          el.classList.remove('decoding');
+          el.style.height = '';
+        }
+      })(t0);
     }
 
-    measureSlots();
+    const decodeTargets = [...document.querySelectorAll('#skillsGrid [data-decode]')];
 
-    /* A wheel notch moves the page ~100px in one jump. Read the scroll
-       position straight and the fragments jump with it, which is what made
-       this feel stiff. So the break runs off a value that eases toward the
-       real scroll each frame: the same damped-scroll idea the LEGALATION can
-       uses. The lag is the point — it is what gives the glass weight. */
-    let smoothY = window.scrollY;
-    let shatterRaf = null;
-    let sectionNear = false;
-    let lastFrameAt = performance.now();
-
-    function shatterLoop(now) {
-      const dt = Math.min(64, now - lastFrameAt);
-      lastFrameAt = now;
-
-      // Frame-rate independent: the same easing at 60Hz and at 144Hz.
-      const k = 1 - Math.pow(0.855, dt / 16.667);
-      smoothY += (window.scrollY - smoothY) * k;
-
-      applyScatter(smoothY);
-
-      // Keep running while it still has catching up to do, even once the
-      // section has left, so it never freezes part-broken.
-      if (sectionNear || Math.abs(window.scrollY - smoothY) > 0.4) {
-        shatterRaf = requestAnimationFrame(shatterLoop);
+    if (decodeTargets.length) {
+      if (reduced) {
+        // Nothing to do: the text is already the real text in the markup.
       } else {
-        smoothY = window.scrollY;
-        applyScatter(smoothY);
-        shatterRaf = null;
+        const cards = [...document.querySelectorAll('#skillsGrid .skill-card')];
+
+        const decodeObserver = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            const card = entry.target;
+            if (entry.isIntersecting) {
+              if (card._decoded) return;
+              card._decoded = true;
+              const parts = [...card.querySelectorAll('[data-decode]')];
+              parts.forEach((el, i) => {
+                // Number, then heading, then body — as if each line lands in turn.
+                const wait = i * 110 + Math.random() * 90;
+                const dur = el.tagName === 'P' ? 900 : 620;
+                setTimeout(() => decodeText(el, dur), wait);
+              });
+            } else if (entry.boundingClientRect.top > 0) {
+              // Only re-arm once the card has left downwards, so scrolling back
+              // up to it plays again but drifting past the bottom does not.
+              card._decoded = false;
+            }
+          });
+        }, { threshold: 0.35 });
+
+        cards.forEach(c => decodeObserver.observe(c));
       }
     }
-
-    function kickShatter() {
-      if (shatterRaf === null) {
-        lastFrameAt = performance.now();
-        shatterRaf = requestAnimationFrame(shatterLoop);
-      }
-    }
-
-    // Cloning the cards into shards costs a frame. Do it while the section is
-    // still off screen rather than on the first scroll that breaks it, which
-    // is exactly when a dropped frame would be seen.
-    if (skillsSection && slots.length) {
-      new IntersectionObserver((entries) => {
-        entries.forEach(e => {
-          sectionNear = e.isIntersecting;
-          if (!sectionNear) return;
-          slots.forEach(s => { if (!s._shards) buildShards(s); });
-          kickShatter();
-        });
-      }, { rootMargin: '700px 0px' }).observe(skillsSection);
-    }
-
-    window.addEventListener('resize', () => {
-      lastScatter = -1;
-      measureSlots();
-      applyScatter(smoothY);
-    });
 
     /* ---------- Scroll: progress, header, scrollspy, to-top ---------- */
     const header = document.getElementById('siteHeader');
@@ -2796,8 +2591,6 @@
       });
 
       sweepReveals();
-      // The break runs on its own damped loop; just make sure it is awake.
-      kickShatter();
       scrollQueued = false;
     }
 
