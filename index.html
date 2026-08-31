@@ -2639,18 +2639,21 @@
       slot._shards = [...host.children];
     }
 
-    function applyScatter() {
+    function applyScatter(scrollValue) {
       if (!slots.length || !skillsSection) return;
 
       const rect = skillsSection.getBoundingClientRect();
       const vh = window.innerHeight;
+      // Absolute position, so the break can be driven by the damped scroll
+      // value instead of wherever the scrollbar happens to be this instant.
+      const topAt = (rect.top + window.scrollY) - scrollValue;
       // 0 while the section is centred, rising to 1 as it travels up and out.
-      const past = vh / 2 - (rect.top + rect.height / 2);
+      const past = vh / 2 - (topAt + rect.height / 2);
       // Spread over most of a screen height: the break should be something you
       // scroll *through*, not a switch you trip past.
       const p = Math.max(0, Math.min(1, past / (vh * 1.15)));
 
-      if (Math.abs(p - lastScatter) < 0.0015) return;
+      if (Math.abs(p - lastScatter) < 0.0004) return;
       lastScatter = p;
 
       const amp = reduced ? 0.4 : 1;
@@ -2700,22 +2703,62 @@
 
     measureSlots();
 
-    // Cloning six cards into forty-two shards costs a frame. Do it while the
-    // section is still off screen rather than on the first scroll that breaks
-    // it, which is exactly when a dropped frame would be seen.
+    /* A wheel notch moves the page ~100px in one jump. Read the scroll
+       position straight and the fragments jump with it, which is what made
+       this feel stiff. So the break runs off a value that eases toward the
+       real scroll each frame: the same damped-scroll idea the LEGALATION can
+       uses. The lag is the point — it is what gives the glass weight. */
+    let smoothY = window.scrollY;
+    let shatterRaf = null;
+    let sectionNear = false;
+    let lastFrameAt = performance.now();
+
+    function shatterLoop(now) {
+      const dt = Math.min(64, now - lastFrameAt);
+      lastFrameAt = now;
+
+      // Frame-rate independent: the same easing at 60Hz and at 144Hz.
+      const k = 1 - Math.pow(0.855, dt / 16.667);
+      smoothY += (window.scrollY - smoothY) * k;
+
+      applyScatter(smoothY);
+
+      // Keep running while it still has catching up to do, even once the
+      // section has left, so it never freezes part-broken.
+      if (sectionNear || Math.abs(window.scrollY - smoothY) > 0.4) {
+        shatterRaf = requestAnimationFrame(shatterLoop);
+      } else {
+        smoothY = window.scrollY;
+        applyScatter(smoothY);
+        shatterRaf = null;
+      }
+    }
+
+    function kickShatter() {
+      if (shatterRaf === null) {
+        lastFrameAt = performance.now();
+        shatterRaf = requestAnimationFrame(shatterLoop);
+      }
+    }
+
+    // Cloning the cards into shards costs a frame. Do it while the section is
+    // still off screen rather than on the first scroll that breaks it, which
+    // is exactly when a dropped frame would be seen.
     if (skillsSection && slots.length) {
-      const prep = new IntersectionObserver((entries) => {
-        if (!entries.some(e => e.isIntersecting)) return;
-        prep.disconnect();
-        slots.forEach(s => { if (!s._shards) buildShards(s); });
-      }, { rootMargin: '700px 0px' });
-      prep.observe(skillsSection);
+      new IntersectionObserver((entries) => {
+        entries.forEach(e => {
+          sectionNear = e.isIntersecting;
+          if (!sectionNear) return;
+          slots.forEach(s => { if (!s._shards) buildShards(s); });
+          kickShatter();
+        });
+      }, { rootMargin: '700px 0px' }).observe(skillsSection);
     }
 
     window.addEventListener('resize', () => {
       lastScatter = -1;
       measureSlots();
-      applyScatter();
+      applyScatter(smoothY);
     });
 
     /* ---------- Scroll: progress, header, scrollspy, to-top ---------- */
@@ -2753,7 +2796,8 @@
       });
 
       sweepReveals();
-      applyScatter();
+      // The break runs on its own damped loop; just make sure it is awake.
+      kickShatter();
       scrollQueued = false;
     }
 
