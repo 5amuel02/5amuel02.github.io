@@ -2499,7 +2499,9 @@
         const p = Math.min(1, (now - t0) / duration);
         // Re-roll a fraction of the unresolved glyphs per frame; rolling all
         // of them every frame reads as noise rather than as working.
-        const roll = ++churn % 2 === 0;
+        // Slower overall now, so the glyphs churn every third frame instead of
+        // every second — at the old rate a longer decode just looks frantic.
+        const roll = ++churn % 3 === 0;
         let out = '';
 
         for (let i = 0; i < n; i++) {
@@ -2540,8 +2542,8 @@
               const parts = [...card.querySelectorAll('[data-decode]')];
               parts.forEach((el, i) => {
                 // Number, then heading, then body — as if each line lands in turn.
-                const wait = i * 110 + Math.random() * 90;
-                const dur = el.tagName === 'P' ? 900 : 620;
+                const wait = i * 190 + Math.random() * 150;
+                const dur = el.tagName === 'P' ? 1500 : 1050;
                 setTimeout(() => decodeText(el, dur), wait);
               });
             } else if (entry.boundingClientRect.top > 0) {
